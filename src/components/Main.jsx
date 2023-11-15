@@ -1,4 +1,3 @@
-// Main.jsx
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -17,8 +16,10 @@ const Main = () => {
     navigate('/login');
   };
 
-  const handleSearch = () => {
-    dispatch(fetchWeatherData(city));
+  const handleCityChange = (e) => {
+    setCity(e.target.value);
+    // Automatically fetch weather data as the user types
+    dispatch(fetchWeatherData(e.target.value));
   };
 
   const formatDate = (datetime) => {
@@ -34,45 +35,22 @@ const Main = () => {
         style={{
           position: 'relative',
           overflow: 'hidden',
+          backgroundColor: '#C1CFEA',
         }}
       >
-        <video
-          autoPlay
-          muted
-          loop
-          style={{
-            position: 'absolute',
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            zIndex: -1,
-          }}
-        >
-          <source
-            src={process.env.PUBLIC_URL + '/assets/pexels-yaroslav-shuraev-5976563 (720p).mp4'}
-            type="video/mp4"
-          />
-          Your browser does not support the video tag.
-        </video>
-
         <div className="p-3 bg-transparent rounded">
           <div className="input-group mb-3">
+            <span className="input-group-text">Right now in,</span>
             <input
-              type="search"
+              type="text"
               className="form-control rounded"
-              style={{
-                width: '600px',
-                backgroundColor: 'transparent',
-                border: '3px solid #ced4da',
-              }}
-              placeholder="Search"
-              aria-label="Search"
-              aria-describedby="search-addon"
-              onChange={(e) => setCity(e.target.value)}
+              placeholder="Enter city name"
+              aria-label="City Name"
+              aria-describedby="basic-addon2"
+              value={city}
+              onChange={handleCityChange}
             />
-            <button type="button" className="btn btn-outline-primary ms-2" onClick={handleSearch}>
-              Search
-            </button>
+            <span className="input-group-text">and it's forecast</span>
           </div>
         </div>
 
@@ -91,17 +69,29 @@ const Main = () => {
               <p className="card-text">City: {selectedCity}</p>
               <p className="card-text">Temperature: {weatherData.data[0].temp}°C</p>
               <p className="card-text">
-                Weather Description: {weatherData.data[0].weather.description}
+                Min Temperature: {weatherData.data[0].app_min_temp}°C | Max Temperature: {weatherData.data[0].app_max_temp}°C
               </p>
+              <p className="card-text">Weather Description: {weatherData.data[0].weather.description}</p>
+              <img
+                src={`https://www.weatherbit.io/static/img/icons/${weatherData.data[0].weather.icon}.png`}
+                alt="Current Weather Icon"
+                style={{ width: '50px', height: '50px', position: 'absolute', top: '5px', right: '5px' }}
+              />
             </div>
 
-            {/* Forecast for the next 5 days */}
             <div className="d-flex justify-content-between">
               {weatherData.data.slice(1, 6).map((day) => (
-                <div key={day.ob_time} className="card p-3 mb-3 bg-transparent mt-3 ml-3" style={{ width: '150px', backgroundColor: 'rgba(255, 255, 255, 0.7)' }}>
-                  <h6 className="card-title">{formatDate(day.ob_time)}</h6>
+                <div key={day.ob_time} className="card p-3 mb-3 bg-transparent mt-3 ml-3" style={{ width: '200px', margin: '0 10px', position: 'relative' }}>
+                  <h6 className="card-title">{formatDate(day.valid_date)}</h6>
                   <p className="card-text">Temperature: {day.temp}°C</p>
+                  <p className="card-text">Min Temperature: {day.app_min_temp}°C</p>
+                  <p className="card-text">Max Temperature: {day.app_max_temp}°C</p>
                   <p className="card-text">Weather: {day.weather.description}</p>
+                  <img
+                    src={`https://www.weatherbit.io/static/img/icons/${day.weather.icon}.png`}
+                    alt={`${day.weather.description} Icon`}
+                    style={{ width: '50px', height: '50px', position: 'absolute', top: '5px', right: '5px' }}
+                  />
                 </div>
               ))}
             </div>
