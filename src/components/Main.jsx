@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { fetchWeatherData } from '../redux/weatherSlice';
@@ -8,8 +8,6 @@ const Main = () => {
   const navigate = useNavigate();
   const [city, setCity] = useState('');
   const weatherData = useSelector((state) => state.weather.data);
-  const isLoading = useSelector((state) => state.weather.loading);
-  const error = useSelector((state) => state.weather.error);
   const selectedCity = useSelector((state) => state.weather.city);
 
   const handleLogout = () => {
@@ -17,10 +15,19 @@ const Main = () => {
   };
 
   const handleCityChange = (e) => {
-    setCity(e.target.value);
-    // Automatically fetch weather data as the user types
-    dispatch(fetchWeatherData(e.target.value));
+    const newCity = e.target.value;
+    setCity(newCity);
   };
+  
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      if (city) {
+        dispatch(fetchWeatherData(city));
+      }
+    }, 3500);
+  
+    return () => clearTimeout(delayDebounceFn);
+  }, [city, dispatch]);
 
   const formatDate = (datetime) => {
     const options = { weekday: 'long', month: 'short', day: 'numeric' };
@@ -38,17 +45,16 @@ const Main = () => {
           backgroundColor: '#C1CFEA',
         }}
       >
-        <div className="p-3 bg-transparent rounded">
+        <div className="p-3 bg-transparent ">
           <div className="input-group mb-3">
             <span className="input-group-text">Right now in,</span>
             <input
               type="text"
               className="form-control rounded"
               placeholder="Enter city name"
-              aria-label="City Name"
-              aria-describedby="basic-addon2"
               value={city}
               onChange={handleCityChange}
+              style={{ height: '40px' }}
             />
             <span className="input-group-text">and it's forecast</span>
           </div>
@@ -60,8 +66,6 @@ const Main = () => {
           </button>
         </div>
 
-        {isLoading && <p>Loading...</p>}
-        {error && <p>Error: {error}</p>}
         {weatherData && weatherData.data && (
           <div className="d-flex justify-content-center align-items-center flex-column">
             <div className="card p-3 mb-3 bg-transparent" style={{ width: '400px' }}>
@@ -72,6 +76,7 @@ const Main = () => {
                 Min Temperature: {weatherData.data[0].app_min_temp}°C | Max Temperature: {weatherData.data[0].app_max_temp}°C
               </p>
               <p className="card-text">Weather Description: {weatherData.data[0].weather.description}</p>
+
               <img
                 src={`https://www.weatherbit.io/static/img/icons/${weatherData.data[0].weather.icon}.png`}
                 alt="Current Weather Icon"
@@ -80,7 +85,7 @@ const Main = () => {
             </div>
 
             <div className="d-flex justify-content-between">
-              {weatherData.data.slice(1, 6).map((day) => (
+              {weatherData.data.slice(1, 7).map((day) => (
                 <div key={day.ob_time} className="card p-3 mb-3 bg-transparent mt-3 ml-3" style={{ width: '200px', margin: '0 10px', position: 'relative' }}>
                   <h6 className="card-title">{formatDate(day.valid_date)}</h6>
                   <p className="card-text">Temperature: {day.temp}°C</p>
