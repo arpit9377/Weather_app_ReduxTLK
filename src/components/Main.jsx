@@ -1,3 +1,4 @@
+// Main.jsx
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -10,6 +11,7 @@ const Main = () => {
   const weatherData = useSelector((state) => state.weather.data);
   const isLoading = useSelector((state) => state.weather.loading);
   const error = useSelector((state) => state.weather.error);
+  const selectedCity = useSelector((state) => state.weather.city);
 
   const handleLogout = () => {
     navigate('/login');
@@ -86,7 +88,7 @@ const Main = () => {
           <div className="d-flex justify-content-center align-items-center flex-column">
             <div className="card p-3 mb-3 bg-transparent" style={{ width: '400px' }}>
               <h5 className="card-title">Current Weather</h5>
-              <p className="card-text">City: {weatherData.data[0].city_name}</p>
+              <p className="card-text">City: {selectedCity}</p>
               <p className="card-text">Temperature: {weatherData.data[0].temp}°C</p>
               <p className="card-text">
                 Weather Description: {weatherData.data[0].weather.description}
